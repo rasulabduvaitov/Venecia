@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: venecia
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+    networks:
+      - main
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: /app/docker-entrypoint.sh
+    environment:
+      DJANGO_SETTINGS_MODULE: Venecia.settings
+    env_file:
+      - .env
+    ports:
+      - "${DOCKER_BACKEND_PORT:-8001}:8000"
+    networks:
+      - main
+    depends_on:
+      - db
+    restart: always
+
+networks:
+  main:
+    driver: bridge
+
+volumes:
+  postgres_data:
